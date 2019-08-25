@@ -8,9 +8,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public interface AwsClientService {
-	URL uploadFileToS3Bucket(int userId, MultipartFile multipartFile);
+	URL uploadFileToS3Bucket(int userId, MultipartFile multipartFile)throws Exception;
 
-	void deleteFileFromS3Bucket(int userId, int fileId, String fileName);
+	void deleteFileFromS3Bucket(int userId, int fileId, String fileName)throws Exception;
 
-	ByteArrayOutputStream downloadFile(int userId, int fileId, String fileName);
+	ByteArrayOutputStream downloadFile(int userId, int fileId, String fileName)throws Exception;
 }

@@ -26,6 +26,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.util.IOUtils;
 import com.hybrid.cloud.dao.AwsClientDao;
+import com.hybrid.cloud.dao.FileAlreadyExistException;
 import com.hybrid.cloud.dao.UserDao;
 import com.hybrid.cloud.models.FileMetadata;
 import com.hybrid.cloud.models.User;
@@ -60,7 +61,7 @@ public class AwsClientServiceImpl implements AwsClientService {
 
 	}
 
-	public URL uploadFileToS3Bucket(int userId, MultipartFile multipartFile) {
+	public URL uploadFileToS3Bucket(int userId, MultipartFile multipartFile) throws Exception{
 		String fileName = multipartFile.getOriginalFilename();
 		URL url = null;
 		try {
@@ -88,11 +89,11 @@ public class AwsClientServiceImpl implements AwsClientService {
 					emailSender=new EmailSender(javaMailSender);
 					emailSender.sendEmailMessage(user.getEmail(),"Token for file "+fileName, checksum);
 					
-				} else {
-					throw new Exception("File already present");
+				}else {
+					throw new FileAlreadyExistException("File already exists ");
 				}
-			} catch (Exception exception) {
-				throw new RuntimeException("Error while uploading file.");
+			} catch (Exception e) {
+				throw e;
 			}
 
 		} catch (AmazonServiceException ex) {
@@ -102,7 +103,7 @@ public class AwsClientServiceImpl implements AwsClientService {
 	}
 
 	@Override
-	public void deleteFileFromS3Bucket(int userId, int fileId,String fileName) {
+	public void deleteFileFromS3Bucket(int userId, int fileId,String fileName)throws Exception {
 		try {
 			amazonS3.deleteObject(new DeleteObjectRequest(awsS3AudioBucket, fileName));
 			amazonS3ClientDao.deleteFileMetadata(fileId);
@@ -113,7 +114,7 @@ public class AwsClientServiceImpl implements AwsClientService {
 	}
 
 	@Override
-	public ByteArrayOutputStream downloadFile(int userId, int fileId, String fileName) {
+	public ByteArrayOutputStream downloadFile(int userId, int fileId, String fileName)throws Exception {
 		try {
 			S3Object s3object = amazonS3.getObject(new GetObjectRequest(awsS3AudioBucket, fileName));
 
@@ -133,10 +134,8 @@ public class AwsClientServiceImpl implements AwsClientService {
 			}
 			return baos;
 		} catch (Exception ioe) {
-			logger.error("IOException: " + ioe.getMessage());
+			throw new Exception("Error while downloading file ");
 		}
-
-		return null;
 	}
 
 }
