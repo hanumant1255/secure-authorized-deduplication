@@ -14,21 +14,23 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import com.hybrid.cloud.models.FileMetadata;
+import com.hybrid.cloud.models.User;
 
 @Repository
-public class AmazonS3ClientDaoImpl implements AmazonS3ClientDao {
+public class AwsClientDaoImpl implements AwsClientDao {
 
 	@Autowired
 	NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
 	@Override
 	public void insertFileMetadata(FileMetadata file) {
-		String query = "INSERT INTO FILE (NAME,TAG,URL,ROLE,USER_ID) VALUES (:NAME,:TAG,:URL,:ROLE,:USER_ID)";
+		String query = "INSERT INTO FILE (NAME,TAG,URL,ROLE,TOKEN,USER_ID) VALUES (:NAME,:TAG,:URL,:ROLE,:TOKEN,:USER_ID)";
 		Map<String, Object> namedParameters = new HashMap<String, Object>();
 		namedParameters.put("NAME", file.getName());
 		namedParameters.put("TAG", file.getTag());
 		namedParameters.put("URL", file.getUrl());
 		namedParameters.put("ROLE", file.getRole());
+		namedParameters.put("TOKEN", file.getTag());
 		namedParameters.put("USER_ID", file.getUserId());
 		namedParameterJdbcTemplate.update(query, namedParameters);
 	}
@@ -74,6 +76,17 @@ public class AmazonS3ClientDaoImpl implements AmazonS3ClientDao {
 		} catch (Exception e) {
 		}
 		return false;
+	}
+
+	@Override
+	public void deleteFileMetadata(int fileId) {
+		String query = "DELETE FROM FILE WHERE ID=:ID";
+		Map<String, Object> namedParameters = new HashMap<String, Object>();
+		namedParameters.put("ID", fileId);
+		try {
+			 namedParameterJdbcTemplate.update(query,namedParameters);
+		} catch (Exception e) {
+		}
 	}
 
 }

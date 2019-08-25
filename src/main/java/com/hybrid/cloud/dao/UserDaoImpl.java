@@ -56,5 +56,30 @@ public class UserDaoImpl implements UserDao {
 		return false;
 
 	}
+	
+	@Override
+	public User getUserDetails(int userId) {
+		String query = "SELECT USERNAME,EMAIL,ROLE  FROM USER WHERE ID=:ID";
+		Map<String, Object> namedParameters = new HashMap<String, Object>();
+		namedParameters.put("ID", userId);
+		User user = null;
+		try {
+			user = namedParameterJdbcTemplate.queryForObject(query, namedParameters, new RowMapper<User>() {
+				@Override
+				public User mapRow(ResultSet rs, int rowNum) throws SQLException {
+					User c = new User();
+					c.setUsername(rs.getString(1));
+					c.setEmail(rs.getString(2));
+					c.setRole(rs.getString(3));
+					return c;
+				}
+			});
+		} catch (EmptyResultDataAccessException e) {
+			return null;
+		}catch(Exception e) {
+			
+		}
+		return user;
+	}
 
 }

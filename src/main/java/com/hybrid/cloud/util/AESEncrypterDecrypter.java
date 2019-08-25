@@ -1,4 +1,4 @@
-package com.hybrid.cloud;
+package com.hybrid.cloud.util;
 
 import java.security.spec.KeySpec;
 import java.util.Base64;

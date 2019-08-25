@@ -7,10 +7,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
-public interface AmazonS3ClientService {
-	URL uploadFileToS3Bucket(int userId, MultipartFile multipartFile, boolean enablePublicReadAccess);
+public interface AwsClientService {
+	URL uploadFileToS3Bucket(int userId, MultipartFile multipartFile);
 
-	void deleteFileFromS3Bucket(int userId, String fileName);
+	void deleteFileFromS3Bucket(int userId, int fileId, String fileName);
 
 	ByteArrayOutputStream downloadFile(int userId, int fileId, String fileName);
 }

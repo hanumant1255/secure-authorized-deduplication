@@ -18,19 +18,19 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.hybrid.cloud.service.AmazonS3ClientService;
+import com.hybrid.cloud.service.AwsClientService;
 
 @RestController
 @RequestMapping("/files")
-public class FileHandlerController {
+public class AwsClientController {
 
 	@Autowired
-	private AmazonS3ClientService amazonS3ClientService;
+	private AwsClientService amazonS3ClientService;
 
 	@PostMapping
 	public ResponseEntity<Map<String, String>> uploadFile(@RequestParam("userId") int userId,
 			@RequestPart(value = "file") MultipartFile file) {
-		URL url = amazonS3ClientService.uploadFileToS3Bucket(userId, file, true);
+		URL url = amazonS3ClientService.uploadFileToS3Bucket(userId, file);
 		Map<String, String> response = new HashMap<>();
 		response.put("message", "file [" + file.getOriginalFilename() + "] uploading request submitted successfully.");
 		response.put("url", url.toString());
@@ -38,9 +38,9 @@ public class FileHandlerController {
 	}
 
 	@DeleteMapping
-	public ResponseEntity<Map<String, String>> deleteFile(@RequestParam("userId") int userId,
+	public ResponseEntity<Map<String, String>> deleteFile(@RequestParam("fileId") int fileId,@RequestParam("userId") int userId,
 			@RequestParam("fileName") String fileName) {
-		this.amazonS3ClientService.deleteFileFromS3Bucket(userId, fileName);
+		this.amazonS3ClientService.deleteFileFromS3Bucket(userId,fileId, fileName);
 
 		Map<String, String> response = new HashMap<>();
 		response.put("message", "file [" + fileName + "] removing request submitted successfully.");

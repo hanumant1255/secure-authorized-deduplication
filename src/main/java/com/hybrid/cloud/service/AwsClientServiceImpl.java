@@ -11,6 +11,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,23 +25,34 @@ import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.util.IOUtils;
-import com.hybrid.cloud.AESEncrypterDecrypter;
-import com.hybrid.cloud.dao.AmazonS3ClientDao;
+import com.hybrid.cloud.dao.AwsClientDao;
+import com.hybrid.cloud.dao.UserDao;
 import com.hybrid.cloud.models.FileMetadata;
+import com.hybrid.cloud.models.User;
+import com.hybrid.cloud.util.AESEncrypterDecrypter;
+import com.hybrid.cloud.util.EmailSender;
 
 @Service
-public class AmazonS3ClientServiceImpl implements AmazonS3ClientService {
+public class AwsClientServiceImpl implements AwsClientService {
 	private String awsS3AudioBucket;
 	private AmazonS3 amazonS3;
-	private static final Logger logger = LoggerFactory.getLogger(AmazonS3ClientServiceImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(AwsClientServiceImpl.class);
 	String password = "PASSWORD";
 	Charset charset = StandardCharsets.UTF_8;
 
 	@Autowired
-	AmazonS3ClientDao amazonS3ClientDao;
+	AwsClientDao amazonS3ClientDao;
+	
+	@Autowired
+	UserDao userDao;
+	
+	@Autowired
+	JavaMailSender javaMailSender;
+	
+	EmailSender emailSender;
 
 	@Autowired
-	public AmazonS3ClientServiceImpl(Region awsRegion, AWSCredentialsProvider awsCredentialsProvider,
+	public AwsClientServiceImpl(Region awsRegion, AWSCredentialsProvider awsCredentialsProvider,
 			String awsS3AudioBucket) {
 		this.amazonS3 = AmazonS3ClientBuilder.standard().withCredentials(awsCredentialsProvider)
 				.withRegion(awsRegion.getName()).build();
@@ -48,7 +60,7 @@ public class AmazonS3ClientServiceImpl implements AmazonS3ClientService {
 
 	}
 
-	public URL uploadFileToS3Bucket(int userId, MultipartFile multipartFile, boolean enablePublicReadAccess) {
+	public URL uploadFileToS3Bucket(int userId, MultipartFile multipartFile) {
 		String fileName = multipartFile.getOriginalFilename();
 		URL url = null;
 		try {
@@ -65,11 +77,17 @@ public class AmazonS3ClientServiceImpl implements AmazonS3ClientService {
 					FileMetadata file = new FileMetadata();
 
 					file.setTag(checksum);
+					file.setToken(checksum);
 					file.setName(fileName);
 					file.setUrl(url.toString());
 					file.setRole("ADMIN");
 					file.setUserId(userId);
 					amazonS3ClientDao.insertFileMetadata(file);
+					
+					User user=userDao.getUserDetails(userId);
+					emailSender=new EmailSender(javaMailSender);
+					emailSender.sendEmailMessage(user.getEmail(),"Token for file "+fileName, checksum);
+					
 				} else {
 					throw new Exception("File already present");
 				}
@@ -84,9 +102,11 @@ public class AmazonS3ClientServiceImpl implements AmazonS3ClientService {
 	}
 
 	@Override
-	public void deleteFileFromS3Bucket(int userId, String fileName) {
+	public void deleteFileFromS3Bucket(int userId, int fileId,String fileName) {
 		try {
 			amazonS3.deleteObject(new DeleteObjectRequest(awsS3AudioBucket, fileName));
+			amazonS3ClientDao.deleteFileMetadata(fileId);
+			
 		} catch (AmazonServiceException ex) {
 			logger.error("error [" + ex.getMessage() + "] occurred while removing [" + fileName + "] ");
 		}

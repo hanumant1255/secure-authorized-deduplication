@@ -10,4 +10,6 @@ public interface UserDao {
 	void save(User userForm);
 
 	Boolean validate(User userForm);
+	
+	User getUserDetails(int userId);
 }
