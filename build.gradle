@@ -36,6 +36,7 @@ dependencies {
     compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.17'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	compile group: 'javax.servlet', name: 'jstl', version: '1.2'
+	compile group: 'org.apache.commons', name: 'commons-crypto', version: '1.0.0'
 	
 }
 

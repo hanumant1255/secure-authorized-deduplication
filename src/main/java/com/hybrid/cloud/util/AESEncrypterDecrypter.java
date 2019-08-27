@@ -1,5 +1,6 @@
 package com.hybrid.cloud.util;
 
+import java.nio.charset.StandardCharsets;
 import java.security.spec.KeySpec;
 import java.util.Base64;
 
@@ -20,9 +21,13 @@ public class AESEncrypterDecrypter {
 			(byte) 0xE3, (byte) 0x03 };
 	private static final int ITERATION_COUNT = 65536;
 	private static final int KEY_LENGTH = 256;
+	final IvParameterSpec iv = new IvParameterSpec(getUTF8Bytes("1234567890123456"));
+
 	private Cipher ecipher;
 	private Cipher dcipher;
-
+	private static byte[] getUTF8Bytes(String input) {
+		   return input.getBytes(StandardCharsets.UTF_8);
+	}
 	public AESEncrypterDecrypter(String passPhrase) throws Exception {
 		SecretKeyFactory factory = SecretKeyFactory.getInstance(PBKDF2_WITH_HMAC_SHA1);
 		KeySpec spec = new PBEKeySpec(passPhrase.toCharArray(), SALT, ITERATION_COUNT, KEY_LENGTH);
@@ -30,11 +35,10 @@ public class AESEncrypterDecrypter {
 		SecretKey secret = new SecretKeySpec(tmp.getEncoded(), AES);
 
 		ecipher = Cipher.getInstance(AES_CBC_PKCS5_PADDING);
-		ecipher.init(Cipher.ENCRYPT_MODE, secret);
+		ecipher.init(Cipher.ENCRYPT_MODE, secret,iv);
 
 		dcipher = Cipher.getInstance(AES_CBC_PKCS5_PADDING);
-		byte[] iv = ecipher.getParameters().getParameterSpec(IvParameterSpec.class).getIV();
-		dcipher.init(Cipher.DECRYPT_MODE, secret, new IvParameterSpec(iv));
+		dcipher.init(Cipher.DECRYPT_MODE, secret, iv);
 	}
 
 	public String encrypt(String encrypt) throws Exception {
