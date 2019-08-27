@@ -21,6 +21,8 @@
 			<div class="navbar-header">
 				<a class="navbar-brand active" href="#">Secure Authorized Deduplication</a>
 			</div>
+			    <a class="navbar-brand active" href="." style="float: right;">Log Out</a>
+			    <a class="navbar-brand active jsRefresh" style="float: right;">Refresh</a>
 		</div>
 	</nav>
 <div class="container jsUserId" id="${user.id}">
@@ -28,7 +30,7 @@
     <hr>
     <div class="loader hidden"><img src="css/spinner-icon.gif"></div> 
    <div class="alert alert-success hidden jsSuccess">
-    <strong>Success!</strong> To download file <a href="" class="alert-link jsRefresh">Refresh!!</a>.
+    <strong>Fie uploaded successfully</strong>  <br><a href="" class="alert-link jsRefresh">To download please refresh page!!</a></br>
   </div>
     <div class="alert alert-danger hidden jsError">
     <strong>Error!</strong> Try it again!!
@@ -62,7 +64,7 @@
                     <tr class="filters">
                         <th><input type="text" class="form-control" placeholder="#" disabled></th>
                         <th><input type="text" class="form-control" placeholder="File Name" disabled></th>
-                        <th><input type="text" class="form-control" placeholder="File url" disabled></th>
+                        <th><input type="text" class="form-control" placeholder="File key" disabled></th>
                         <th><input type="text" class="form-control" placeholder="Download" disabled></th>
                     </tr>
                 </thead>
@@ -73,7 +75,9 @@
 			         <tr>
 			            <td>${count}</td>
                         <td>${file.name}</td>
-                        <td>${file.url}</td>
+                        <td>	
+						<input type="text" name="fileKey" id="${file.fileId}fileKey" class="form-control" value="please insert file key here">
+					   </td>
                         <td><button id="${file.fileId}" class="jsDownload">Download</button></td>                      
                     </tr>
 			

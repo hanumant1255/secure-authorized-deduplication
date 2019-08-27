@@ -114,13 +114,14 @@ public class AwsClientServiceImpl implements AwsClientService {
 	}
 
 	@Override
-	public ByteArrayOutputStream downloadFile(int userId, int fileId, String fileName)throws Exception {
+	public ByteArrayOutputStream downloadFile(int userId, int fileId, String fileName,String key)throws Exception {
 		try {
+			FileMetadata file = amazonS3ClientDao.getFileMetadata(fileId);
+            if(key.equals(file.getTag())) {
 			S3Object s3object = amazonS3.getObject(new GetObjectRequest(awsS3AudioBucket, fileName));
 
 			InputStream in = s3object.getObjectContent();
 
-			FileMetadata file = amazonS3ClientDao.getFileMetadata(fileId);
 			AESEncrypterDecrypter encrypter = new AESEncrypterDecrypter(file.getTag());
 			String decrypted = encrypter.decrypt(IOUtils.toString(in));
 
@@ -133,8 +134,12 @@ public class AwsClientServiceImpl implements AwsClientService {
 				baos.write(buffer, 0, len);
 			}
 			return baos;
+            }else {
+               throw new Exception("Please provide correct key!!");
+            }
+            
 		} catch (Exception ioe) {
-			throw new Exception("Error while downloading file ");
+			throw ioe;
 		}
 	}
 

@@ -12,5 +12,5 @@ public interface AwsClientService {
 
 	void deleteFileFromS3Bucket(int userId, int fileId, String fileName)throws Exception;
 
-	ByteArrayOutputStream downloadFile(int userId, int fileId, String fileName)throws Exception;
+	ByteArrayOutputStream downloadFile(int userId, int fileId, String fileName, String key)throws Exception;
 }

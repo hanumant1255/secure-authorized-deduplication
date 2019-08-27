@@ -71,10 +71,10 @@ public class AwsClientController {
 
 	@GetMapping
 	public ResponseEntity<byte[]> downloadFile(@RequestParam("userId") int userId, @RequestParam("fileId") int fileId,
-			@RequestParam("fileName") String fileName) {
+			@RequestParam("fileName") String fileName,@RequestParam("fileKey") String fileKey) {
 		ByteArrayOutputStream downloadInputStream;
 		try {
-			downloadInputStream = amazonS3ClientService.downloadFile(userId, fileId, fileName);
+			downloadInputStream = amazonS3ClientService.downloadFile(userId, fileId, fileName,fileKey);
 			return ResponseEntity.ok().contentType(contentType(fileName))
 					.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
 					.body(downloadInputStream.toByteArray());

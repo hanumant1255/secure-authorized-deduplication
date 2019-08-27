@@ -54,9 +54,10 @@ $(document).on(
 				values[i] = item.innerHTML;
 			});
 			var fileName = values[1];
-			if (userId && fileId && fileName) {
+			var fileKey=$("#"+fileId+"fileKey").val();
+			if (userId && fileId && fileName && fileKey) {
 				window.open("/secure-auth-d/files?userId=" + userId
-						+ "&fileId=" + fileId + "&fileName=" + fileName);
+						+ "&fileId=" + fileId + "&fileName=" + fileName +"&fileKey=" +fileKey);
 			}
 
 		});
