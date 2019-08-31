@@ -4,8 +4,7 @@ public class FileMetadata {
 	
 	private  int fileId;
 	private String name;
-	private String tag;
-	private String token;
+	private String fileKey;
 	private String url;
 	private String role;
 	private int userId;
@@ -29,18 +28,6 @@ public class FileMetadata {
 	public void setName(String name) {
 		this.name = name;
 	}
-	public String getTag() {
-		return tag;
-	}
-	public void setTag(String tag) {
-		this.tag = tag;
-	}
-	public String getToken() {
-		return token;
-	}
-	public void setToken(String token) {
-		this.token = token;
-	}
 	public String getUrl() {
 		return url;
 	}
@@ -52,6 +39,12 @@ public class FileMetadata {
 	}
 	public void setRole(String role) {
 		this.role = role;
+	}
+	public String getFileKey() {
+		return fileKey;
+	}
+	public void setFileKey(String fileKey) {
+		this.fileKey = fileKey;
 	}
 	
 	

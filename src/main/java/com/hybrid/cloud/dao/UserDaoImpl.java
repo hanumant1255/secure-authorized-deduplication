@@ -90,7 +90,7 @@ public class UserDaoImpl implements UserDao {
 
 	@Override
 	public List<FileMetadata> getFiles(User user) throws Exception {
-		String query = "SELECT ID,NAME,TAG,URL FROM FILE WHERE ";
+		String query = "SELECT ID,NAME,FILE_KEY,URL FROM FILE WHERE ";
 		Map<String, Object> namedParameters = new HashMap<String, Object>();
 
 		if(user.getRole().equalsIgnoreCase("ADMIN")) {
@@ -108,7 +108,7 @@ public class UserDaoImpl implements UserDao {
 					FileMetadata c = new FileMetadata();
 					c.setFileId(rs.getInt(1));
 					c.setName(rs.getString(2));
-					c.setTag(rs.getString(3));
+					c.setFileKey(rs.getString(3));
 					c.setUrl(rs.getString(4));
 					return c;
 				}

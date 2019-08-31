@@ -69,23 +69,30 @@ public class AwsClientServiceImpl implements AwsClientService {
 			objectMetadata.setContentType(multipartFile.getContentType());
 			objectMetadata.setContentLength(multipartFile.getSize());
 			try {
+				//Calculating checksum based on file content
 				String checksum = DigestUtils.sha256Hex(multipartFile.getInputStream());
+				//If file already uploaded throw "file already exists" error
 				if (!amazonS3ClientDao.isExists(checksum)) {
+					//Encrypt file using generated file checksum
 					AESEncrypterDecrypter encrypter = new AESEncrypterDecrypter(checksum);
 					String encrypted = encrypter.encrypt(IOUtils.toString(multipartFile.getInputStream()));
+					
+					//Upload file on aws
 					amazonS3.putObject(this.awsS3AudioBucket, fileName, encrypted);
 					url = amazonS3.getUrl(this.awsS3AudioBucket, fileName);
+					
 					FileMetadata file = new FileMetadata();
-
-					file.setTag(checksum);
-					file.setToken(checksum);
+					file.setFileKey(checksum);
 					file.setName(fileName);
 					file.setUrl(url.toString());
 					file.setRole("ADMIN");
 					file.setUserId(userId);
-					amazonS3ClientDao.insertFileMetadata(file);
 					
+					//Insert file metadata in database
+					amazonS3ClientDao.insertFileMetadata(file);					
 					User user=userDao.getUserDetails(userId);
+					
+					//Send file key through email to user
 					emailSender=new EmailSender(javaMailSender);
 					emailSender.sendEmailMessage(user.getEmail(),"Token for file "+fileName, checksum);
 					
@@ -116,15 +123,22 @@ public class AwsClientServiceImpl implements AwsClientService {
 	@Override
 	public ByteArrayOutputStream downloadFile(int userId, int fileId, String fileName,String key)throws Exception {
 		try {
+			
+			//Get file metadata from database
 			FileMetadata file = amazonS3ClientDao.getFileMetadata(fileId);
-            if(key.equals(file.getTag())) {
+			
+			//Campare user provided key with stored key, if same throw file already exists error
+            if(key.equals(file.getFileKey())) {
+            
+            //Download decrypted file from aws
 			S3Object s3object = amazonS3.getObject(new GetObjectRequest(awsS3AudioBucket, fileName));
 
 			InputStream in = s3object.getObjectContent();
-
-			AESEncrypterDecrypter encrypter = new AESEncrypterDecrypter(file.getTag());
+            //Decrypted file using key
+			AESEncrypterDecrypter encrypter = new AESEncrypterDecrypter(file.getFileKey());
 			String decrypted = encrypter.decrypt(IOUtils.toString(in));
-
+			
+            //Send decrypted file to user
 			InputStream stream = new ByteArrayInputStream(decrypted.getBytes(StandardCharsets.UTF_8));
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 

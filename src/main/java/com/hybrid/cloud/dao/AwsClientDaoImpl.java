@@ -24,20 +24,19 @@ public class AwsClientDaoImpl implements AwsClientDao {
 
 	@Override
 	public void insertFileMetadata(FileMetadata file) {
-		String query = "INSERT INTO FILE (NAME,TAG,URL,ROLE,TOKEN,USER_ID) VALUES (:NAME,:TAG,:URL,:ROLE,:TOKEN,:USER_ID)";
+		String query = "INSERT INTO FILE (NAME,FILE_KEY,URL,ROLE,USER_ID) VALUES (:NAME,:FILE_KEY,:URL,:ROLE,:USER_ID)";
 		Map<String, Object> namedParameters = new HashMap<String, Object>();
 		namedParameters.put("NAME", file.getName());
-		namedParameters.put("TAG", file.getTag());
+		namedParameters.put("FILE_KEY", file.getFileKey());
 		namedParameters.put("URL", file.getUrl());
 		namedParameters.put("ROLE", file.getRole());
-		namedParameters.put("TOKEN", file.getTag());
 		namedParameters.put("USER_ID", file.getUserId());
 		namedParameterJdbcTemplate.update(query, namedParameters);
 	}
 
 	@Override
 	public FileMetadata getFileMetadata(int fileId) {
-		String query = "SELECT TAG,URL FROM FILE WHERE ID=:ID";
+		String query = "SELECT FILE_KEY,URL FROM FILE WHERE ID=:ID";
 		Map<String, Object> namedParameters = new HashMap<String, Object>();
 		namedParameters.put("ID", fileId);
 		FileMetadata file = null;
@@ -46,7 +45,7 @@ public class AwsClientDaoImpl implements AwsClientDao {
 				@Override
 				public FileMetadata mapRow(ResultSet rs, int rowNum) throws SQLException {
 					FileMetadata c = new FileMetadata();
-					c.setTag(rs.getString(1));
+					c.setFileKey(rs.getString(1));
 					c.setUrl(rs.getString(2));
 					return c;
 				}
@@ -60,7 +59,7 @@ public class AwsClientDaoImpl implements AwsClientDao {
 
 	@Override
 	public boolean isExists(String checksum) {
-		String query = "SELECT TAG FROM FILE";
+		String query = "SELECT FILE_KEY FROM FILE";
 		List<String> tagList = new ArrayList<String>();
 		try {
 			tagList = namedParameterJdbcTemplate.query(query, new RowMapper<String>() {
